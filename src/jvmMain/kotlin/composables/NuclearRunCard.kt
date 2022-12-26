@@ -1,6 +1,5 @@
 package composables
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,11 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -26,22 +21,25 @@ import io.kamel.image.KamelImage
 import io.kamel.image.lazyPainterResource
 import kotlinx.coroutines.Job
 import models.Crown
+import models.Enemy
+import models.Weapon
 import java.io.File
 import java.util.*
 
 val cardWidth = 300.dp
 val characterImageSize = 150.dp
 val weaponImageSize = 100.dp
-val crownImageSize = 50.dp
+val crownImageSize = 40.dp
+val enemyImageSize = 100.dp
 const val BASE_RESOURCE_PATH = "src/jvmMain/resources"
 
-enum class ResourcesPath(val path: String) {
-    Characters("$BASE_RESOURCE_PATH/characters"),
-    Crowns("$BASE_RESOURCE_PATH/crowns"),
-    Weapons("$BASE_RESOURCE_PATH/weapons"),
-    Enemies("$BASE_RESOURCE_PATH/enemies"),
-    Areas("$BASE_RESOURCE_PATH/areas"),
-    Mutations("$BASE_RESOURCE_PATH/mutations")
+enum class ResourcesPath(val path: String, val imgType: String, val label: String, val imgSize: Dp) {
+    Characters("$BASE_RESOURCE_PATH/characters", "png", "Character", characterImageSize),
+    Crowns("$BASE_RESOURCE_PATH/crowns", "png", "Crown", crownImageSize),
+    Weapons("$BASE_RESOURCE_PATH/weapons", "png", "Weapon", weaponImageSize),
+    Enemies("$BASE_RESOURCE_PATH/enemies", "gif", "Enemy", enemyImageSize),
+    Areas("$BASE_RESOURCE_PATH/areas", "webp", "Area", 100.dp),
+    Mutations("$BASE_RESOURCE_PATH/mutations", "webp", "Mutations", 40.dp)
 }
 
 @Composable
@@ -59,9 +57,10 @@ fun NuclearRunCard(
         ) {
             Title("Normal", 1671496539273)
             Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Crown(Crown.HASTE)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 Character()
+                Spacer(Modifier.width(55.dp))
+                CrownEnemyWorldColumn()
             }
             Spacer(modifier = Modifier.height(14.dp))
             WeaponsRow()
@@ -70,14 +69,22 @@ fun NuclearRunCard(
 }
 
 @Composable
-fun Crown(crown: Crown) {
+fun CrownEnemyWorldColumn() {
+    Column {
+        ItemColumn(Crown.HASTE.crownName, ResourcesPath.Crowns)
+        ItemColumn(Enemy.BANDIT.enemyName, ResourcesPath.Enemies)
+    }
+}
+
+@Composable
+fun ItemColumn(imgName: String, resourcesPath: ResourcesPath) {
     Column(
         modifier = Modifier.wrapContentSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ShowImage(Modifier.size(crownImageSize), crown.crownName, ResourcesPath.Crowns.path)
+        ShowImage(imgName = imgName, resourcesPath = resourcesPath)
         Spacer(modifier = Modifier.height(4.dp))
-        RoundLabel("Crown")
+        RoundLabel(resourcesPath.label)
     }
 }
 
@@ -114,38 +121,26 @@ fun WeaponsRow() {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Weapon("Assault Rifle", "Weapon A")
-        Weapon("Golden Wrench", "Weapon B")
-    }
-}
-
-@Composable
-fun Weapon(name: String, label: String) {
-    Column(
-        modifier = Modifier.wrapContentSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        ShowImage(Modifier.wrapContentHeight().width(weaponImageSize), name, ResourcesPath.Weapons.path)
-        Spacer(modifier = Modifier.height(4.dp))
-        RoundLabel(label)
+        ItemColumn(Weapon.ASSAULT_RIFLE.weapName, ResourcesPath.Weapons)
+        ItemColumn(Weapon.GOLDEN_WRENCH.weapName, ResourcesPath.Weapons)
     }
 }
 
 @Composable
 fun Character(characterName: String = "Chicken") {
     Column(
-        modifier = Modifier.padding(end = 15.dp),
+        modifier = Modifier.border(1.dp, Color.Red),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ShowImage(Modifier.size(characterImageSize), characterName, ResourcesPath.Characters.path)
+        ShowImage(Modifier.size(characterImageSize), characterName, ResourcesPath.Characters)
         Spacer(modifier = Modifier.height(4.dp))
         Text(text = characterName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-fun ShowImage(modifier: Modifier = Modifier, imgName: String, imgPath: String) {
-    val img = File("$imgPath/$imgName.png")
+fun ShowImage(modifier: Modifier = Modifier, imgName: String, resourcesPath: ResourcesPath) {
+    val img = File("${resourcesPath.path}/$imgName.${resourcesPath.imgType}")
 
     val painterResource = lazyPainterResource(img) {
         coroutineContext = Job()
@@ -154,7 +149,7 @@ fun ShowImage(modifier: Modifier = Modifier, imgName: String, imgPath: String) {
     KamelImage(
         resource = painterResource,
         contentDescription = imgName,
-        modifier = modifier
+        modifier = modifier.size(resourcesPath.imgSize)
     )
 }
 
