@@ -22,6 +22,28 @@ data class NuclearRun(
     val runTimestamp: Long
 )
 
+val nuclearRunExample = NuclearRun(
+    id = "1",
+    character = "Robot",
+    lastHit = "Bandit",
+    world = "Desert",
+    worldLevel = 1,
+    crown = "Haste",
+    weaponA = "Shotgun",
+    weaponB = "Bouncer Smg",
+    skin = 'A',
+    ultraMutation = "A",
+    characterLvl = 1,
+    loops = 1,
+    win = true,
+    mutations = listOf("Bloodlust", "Gamma_Guts", "Hammerhead", "Rhino_Skin", "Scarier_Face", "Recycle_Gland", "Second_Stomach", "Sharp_Teeth", "Last_Wish"),
+    kills = 175,
+    health = 0,
+    steamId = "1",
+    type = "Normal",
+    runTimestamp = 1671496539273
+)
+
 enum class Character(val charName: String, val ultraMutations: Array<String>) {
     FISH("Fish", arrayOf("Confiscate", "Gun Warrant")),
     CRYSTAL("Crystal", arrayOf("Fortress", "Juggernaut")),
